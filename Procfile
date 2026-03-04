@@ -1,1 +1,1 @@
-web: gunicorn AIML.wsgi
+web: gunicorn AIML.wsgi:application
