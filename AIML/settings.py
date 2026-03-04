@@ -10,22 +10,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
+# Quick-start deployment settings - adjust with environment variables
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-b^*2%t$0%uxf8ytutjf5=ii2z%3$-qv#0_9fod8n&b-(&ltw!o'
+SECRET_KEY = os.environ.get('SECRET_KEY')  # provided by Render environment
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['*']  # initial deployment
 
 
 # Application definition
@@ -37,14 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',  # For handling CORS (Cross-Origin Resource Sharing)
-    'rest_framework',  # For building the API
-    'detector',  # Your custom app for forensic analysis
+    'corsheaders',  # CORS handling
+    'rest_framework',  # API framework
+    'detector',  # custom forensic analysis app
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Must be at the top for CORS to work
+    'corsheaders.middleware.CorsMiddleware',  # CORS must be first
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # serve static files efficiently
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,25 +78,20 @@ WSGI_APPLICATION = 'AIML.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# settings.py
-import os
-import dj_database_url
-
-DEBUG = False # Set to False for deployment
-ALLOWED_HOSTS = ['your-backend-name.onrender.com', '127.0.0.1']
-
-# CORS - Add your Vercel URL here!
-CORS_ALLOWED_ORIGINS = [
-    "https://your-frontend-name.vercel.app",
-]
-
-# Use a real database for production (PostgreSQL)
 DATABASES = {
     'default': dj_database_url.config(default='sqlite:///db.sqlite3')
 }
-    
-}
 
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "https://digital-forensic-frontend-8ch0ccotz-23981a05ae-9260s-projects.vercel.app",
+    "http://localhost:5173",
+]
+
+# CSRF trusted origins
+CSRF_TRUSTED_ORIGINS = [
+    "https://digital-forensic-frontend-8ch0ccotz-23981a05ae-9260s-projects.vercel.app",
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -131,12 +128,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-import os
 
 # --- MEDIA FILE CONFIGURATION ---
 # The URL to use when referring to media files (e.g., http://127.0.0.1:8000/media/sample.mp4)
@@ -147,7 +145,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # --- CORS SETTINGS (For Claude/Lovable) ---
 # This allows your local React app (usually port 3000 or 5173) to send files to Django
-CORS_ALLOW_ALL_ORIGINS = True 
+# Use explicit origins above; disable permissive flag
+
 
 # Increase the maximum upload size to 100MB (Default is only 2.5MB)
 # This is crucial for high-quality video analysis
