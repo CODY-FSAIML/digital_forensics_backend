@@ -1,0 +1,18 @@
+# Environments
+env/
+venv/
+.env
+
+# Media and temporary files
+media/
+temp_*/
+*.mp4
+*.wav
+*.jpg
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Database
+db.sqlite3
